@@ -1,5 +1,5 @@
 {
-  "name": "Onboard LED Blink App",
+  "name": "OnboardLEDBlink",
   "description": "",
   "version": "0.0.0",
   "main": "main.js",
