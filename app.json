@@ -1,0 +1,15 @@
+{
+	"reponame":"iotapp-template-onboard-led-blink",
+	"title":"Onboard LED Blink",
+	"tooltip":"A simple node.js application intended to blink the onboard LED on the Intel based development boards such as the Intel(R) Galileo and Edison with Arduino breakout board.",
+	"description":"A simple node.js application intended to blink the onboard LED on the Intel based development boards such as the Intel(R) Galileo and Edison with Arduino breakout board.",
+	"articleurl":"TBA",
+    "screenshotUrl":"",
+    "iconUrl":"",
+	"highlights":[""],
+    "keywords":[""],
+	"visible": "true",
+	"apppreview":"false",
+	"appname":"demo.onboardledblink",
+	"relname":"4.0.0"
+}
