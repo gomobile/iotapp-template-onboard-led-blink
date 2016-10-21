@@ -4,7 +4,7 @@
   "sample": false,
   "template": true,
   "visible" : true,
-  "sortWeight" : "0.0",
+  "sortWeight" : "0.9",
   "repoName" : "iotapp-template-onboard-led-blink",
   "tooltip" : "Blink the onboard LED.",
   "description" : "A simple node.js application that blinks the onboard LED, on select Intel IoT development boards.",
