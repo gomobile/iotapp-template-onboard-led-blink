@@ -1,23 +1,15 @@
 {
-   "tooltip" : "A simple node.js application intended to blink the onboard LED on the Intel based development boards such as the Intel(R) Galileo and Edison with Arduino breakout board.",
-   "section" : "iot-templates",
-   "group" : "other",
-   "visible" : true,
-   "appName" : "demo.onboardledblink",
-   "keywords" : [
-      ""
-   ],
-   "repoName" : "iotapp-template-onboard-led-blink",
-   "iconUrl" : "",
-   "title" : "Onboard LED Blink",
-   "relName" : "4.0.0",
-   "appPreview" : false,
-   "articleUrl" : "https://software.intel.com/en-us/xdk/docs/intel-xdk-iot-edition-nodejs-templates",
-   "description" : "A simple node.js application intended to blink the onboard LED on the Intel based development boards such as the Intel(R) Galileo and Edison with Arduino breakout board.",
-   "projectTypeName" : "com.intel.xdk.projecttype.iotapp",
-   "mobile" : false,
-   "highlights" : [
-      ""
-   ],
-   "screenshotUrl" : ""
+  "title" : "Onboard LED Blink",
+  "projectTypeName" : "com.intel.xdk.projecttype.iotapp",
+  "sample": false,
+  "template": true,
+  "visible" : true,
+  "sortWeight" : "0.0",
+  "repoName" : "iotapp-template-onboard-led-blink",
+  "tooltip" : "Blink the onboard LED.",
+  "description" : "A simple node.js application that blinks the onboard LED, on select Intel IoT development boards.",
+  "articleUrl" : "https://software.intel.com/en-us/xdk/docs/intel-xdk-iot-edition-nodejs-templates",
+  "keywords" : ["led"],
+  "targets": ["edison","galileo","joule"],
+  "runtimes": ["node"]
 }
