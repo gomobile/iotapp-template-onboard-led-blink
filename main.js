@@ -21,10 +21,6 @@ var ver = require('./version-compare.js') ;             // for comparing semVer 
 console.log('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n') ;   // poor man's clear console function
 console.log('\nEntering ' + APP_NAME) ;                 // announce our intentions! :-)
 
-var intervalID ;                                        // object to track periodic interval function
-var myOnboardLed ;                                      // to hold mraa LED I/O object
-var ledState ;                                          // boolean to hold the state of the LED
-
 
 // confirm that we have a version of MRAA that works
 // with this version of the app, exit if we do not
@@ -44,6 +40,7 @@ if( ver.versionCompare(mraa.getVersion(), MIN_MRAA_VERSION) < 0 ) {
 // and make appropriate adjustments to our gpio configuration calls
 // if we do not recognize the platform, issue error and exit the app
 
+var myOnboardLed ;                                      // to hold mraa LED I/O object
 switch( mraa.getPlatformType() ) {
 
     case mraa.INTEL_GALILEO_GEN1:                       // Gallileo Gen 1
@@ -74,7 +71,7 @@ var periodicActivity = function() {
     myOnboardLed.write(ledState?0:1) ;                  // if the pin is currently 1 write a '0' (low) else write a '1' (high)
     process.stdout.write(ledState?'0':'1') ;            // and write an unending stream of toggling 1/0's to the console
 } ;
-intervalID = setInterval(periodicActivity, 1000) ;      // start the periodic toggle
+var intervalID = setInterval(periodicActivity, 1000) ;  // start the periodic toggle
 
 
 // type process.exit(0) in debug console to see
