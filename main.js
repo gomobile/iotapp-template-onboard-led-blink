@@ -5,71 +5,43 @@
  * https://software.intel.com/en-us/html5/articles/intel-xdk-iot-edition-nodejs-templates
  */
 
-
-// keep these lines (below) for proper jshinting and jslinting
-/*jslint node:true */
-/*jshint unused:true */
+// keep /*jslint and /*jshint lines for proper jshinting and jslinting
 // see http://www.jslint.com/help.html and http://jshint.com/docs
+/* jslint node:true */
+/* jshint unused:true */
 
 
-var APP_NAME = 'IoT LED Blink' ;                        // display name of this app
-var MIN_MRAA_VERSION = '1.3.0' ;                        // minimum required MRAA version
+"use strict" ;
 
-var mraa = require('mraa');                             // we need the mraa low-level I/O library
-var ver = require('./version-compare.js') ;             // for comparing semVer values
+var APP_NAME = "IoT LED Blink" ;
+var cfg = require("./cfg-app-platform.js")() ;          // init and config I/O resources
 
-console.log('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n') ;   // poor man's clear console function
-console.log('\nEntering ' + APP_NAME) ;                 // announce our intentions! :-)
+console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n") ;   // poor man's clear console
+console.log("Initializing " + APP_NAME) ;
 
 
-// confirm that we have a version of MRAA that works
-// with this version of the app, exit if we do not
+// confirm that we have a version of libmraa and Node.js that works
+// exit if we do not
 
-if( ver.versionCompare(mraa.getVersion(), MIN_MRAA_VERSION) === false) {
-    console.error('Bad MRAA version string: ' + mraa.getVersion()) ;
-    process.exit(mraa.getVersion()) ;
+cfg.identify() ;    // just prints some interesting platform details to console, more later
+
+if( !cfg.test() ) {
+    process.exitCode = 1 ;
+    throw new Error("Call to cfg.test() failed, check console messages for details.") ;
 }
-if( ver.versionCompare(mraa.getVersion(), MIN_MRAA_VERSION) < 0 ) {
-    console.error('MRAA version is too old, upgrade your MRAA node module.') ;
-    console.error('MRAA version: ' + mraa.getVersion()) ;
-    process.exit(mraa.getVersion()) ;
+if( !cfg.init() ) {
+    process.exitCode = 1 ;
+    throw new Error("Call to cfg.init() failed, check console messages for details.") ;
 }
-
-
-// using the mraa library, detect which platform we are running on
-// and make appropriate adjustments to our gpio configuration calls
-// if we do not recognize the platform, issue error and exit the app
-
-var myOnboardLed ;                                      // to hold mraa LED I/O object
-switch( mraa.getPlatformType() ) {
-
-    case mraa.INTEL_GALILEO_GEN1:                       // Gallileo Gen 1
-        myOnboardLed = new mraa.Gpio(3, false, true) ;  // GPIO pin to drive onboard LED
-        break ;
-
-    case mraa.INTEL_GALILEO_GEN2:                       // Gallileo Gen 2
-    case mraa.INTEL_EDISON_FAB_C:                       // Edison
-        myOnboardLed = new mraa.Gpio(13) ;              // GPIO pin to drive onboard LED
-        break ;
-
-    case mraa.INTEL_GT_TUCHUCK:                         // Joule (aka Grosse Tete)
-        myOnboardLed = new mraa.Gpio(100) ;             // GPIO pin to drive onboard LED
-        break ;                                         // GPIO 100, 101, 102 or 103 will work
-
-    default:
-        console.error("Unknown MRAA platform: " + mraa.getPlatformType() + " -> " + mraa.getPlatformName()) ;
-        process.exit(mraa.getPlatformType()) ;
-}
-myOnboardLed.dir(mraa.DIR_OUT) ;                        // set the GPIO direction to output
 
 
 // now we are going to flash the LED
-// by simply toggling it at a periodic interval
+// by toggling it at a periodic interval
 
 var periodicActivity = function() {
-    var ledState = myOnboardLed.read() ;                // get the current state of the LED pin
-    myOnboardLed.write(ledState?0:1) ;                  // if the pin is currently 1 write a '0' (low) else write a '1' (high)
-    process.stdout.write(ledState?'0':'1') ;            // and write an unending stream of toggling 1/0's to the console
+    var ledState = cfg.led.read() ;             // get the current state of the LED pin
+    cfg.led.write(ledState?0:1) ;               // if the pin is currently 1 write a '0' (low) else write a '1' (high)
+    process.stdout.write(ledState?'0':'1') ;    // and write an unending stream of toggling 1/0's to the console
 } ;
 var intervalID = setInterval(periodicActivity, 1000) ;  // start the periodic toggle
 
@@ -77,7 +49,7 @@ var intervalID = setInterval(periodicActivity, 1000) ;  // start the periodic to
 // type process.exit(0) in debug console to see
 // the following message be emitted to the debug console
 
-process.on('exit', function(code) {
+process.on("exit", function(code) {
     clearInterval(intervalID) ;
-    console.log('\nExiting ' + APP_NAME + ', with code:', code) ;
+    console.log("\nExiting " + APP_NAME + ", with code:", code) ;
 }) ;
