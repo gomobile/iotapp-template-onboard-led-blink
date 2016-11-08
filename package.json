@@ -1,5 +1,5 @@
 {
-  "name": "OnboardLEDBlink",
+  "name": "xdk-iot-onboard-led-blink",
   "description": "",
   "version": "0.0.0",
   "main": "main.js",
