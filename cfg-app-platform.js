@@ -8,10 +8,6 @@
 /* jslint node:true */
 /* jshint unused:true */
 
-"use strict" ;
-var cfg = {} ;              // for returning our module properties and methods
-var ver = {} ;              // reference to the version compare helper module
-var opt = {} ;              // to store module init passed parameters object
 
 
 /**
@@ -37,15 +33,17 @@ var opt = {} ;              // to store module init passed parameters object
  * @param {Object} options? - object containing module options
  * @return {Object} cfg - module's public methods and properties
  * @author Paul Fischer, Intel Corporation
- *
- * options.skipTest = true - skip platform compatibility tests
- * options.altGpio = number - use alternate gpio number for LED
  */
 
 module.exports = function(options) {
+"use strict" ;
 
-    options = options || {} ;           // force a parms object if none was passed
-    opt = options ;                     // assign passed parms to our permanent object
+    var cfg = {} ;              // for returning our module properties and methods
+    var ver = {} ;              // reference to the version compare helper module
+    var opt = {} ;              // to store module init passed parameters object
+
+    options = options || {} ;   // force a parameters object if none was passed
+    opt = options ;             // assign passed parameters to our permanent object
 
     if( opt.skipTest && (opt.skipTest !== true) )
         opt.skipTest = false ;
@@ -62,6 +60,7 @@ module.exports = function(options) {
         throw new Error("Unable to resolve mraa node module, see console for details.") ;
     }
     cfg.mraa = require("mraa") ;                    // initializes libmraa for I/O access
+
     cfg.led = {} ;                                  // to hold mraa LED I/O object
 
     ver = require("./utl/version-compare.js") ;     // simple version strings comparator
@@ -149,7 +148,7 @@ module.exports = function(options) {
 
     cfg.init = function() {
 
-        var gpio = opt.altGpio || 0 ;
+        var gpio = opt.altGpio || 1 ;                   // set to arbitrary int if none provided by altGpio
         var chkPlatform = true ;                        // start out hopeful!
         switch( cfg.mraa.getPlatformType() ) {          // which board are we running on?
 
