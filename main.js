@@ -10,8 +10,8 @@
 /* jslint node:true */
 /* jshint unused:true */
 
-
 "use strict" ;
+
 
 var APP_NAME = "IoT LED Blink" ;
 var cfg = require("./cfg-app-platform.js")() ;          // init and config I/O resources
@@ -21,9 +21,9 @@ console.log("Initializing " + APP_NAME) ;
 
 
 // confirm that we have a version of libmraa and Node.js that works
-// exit if we do not
+// exit this app if we do not
 
-cfg.identify() ;    // just prints some interesting platform details to console, more later
+cfg.identify() ;    // prints some interesting platform details to console, more later
 
 if( !cfg.test() ) {
     process.exitCode = 1 ;
