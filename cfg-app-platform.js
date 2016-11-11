@@ -60,10 +60,63 @@ module.exports = function(options) {
         throw new Error("Unable to resolve mraa node module, see console for details.") ;
     }
     cfg.mraa = require("mraa") ;                    // initializes libmraa for I/O access
-
-    cfg.led = {} ;                                  // to hold mraa LED I/O object
-
     ver = require("./utl/version-compare.js") ;     // simple version strings comparator
+
+
+
+/**
+ * Using the mraa library, detect which platform we are running on
+ * and make appropriate adjustments to our gpio configuration calls.
+ *
+ * Check the case statements to find out which header pin is being
+ * initialized for use by this app. Specifically, look for the
+ * `cfg.led = new ...` lines.
+ *
+ * If we do not recognize the platform, issue error and exit the app.
+ *
+ * @function
+ * @return {Boolean} true if supported platform detected (and initialized)
+ * @author Paul Fischer, Intel Corporation
+ */
+
+    cfg.led = {} ;                                      // to return mraa LED I/O object
+
+    cfg.init = function() {
+
+        var gpio = opt.altGpio || 0 ;                   // set to zero if none provided by altGpio
+        var chkPlatform = true ;                        // start out hopeful!
+        switch( cfg.mraa.getPlatformType() ) {          // which board are we running on?
+
+            case cfg.mraa.INTEL_GALILEO_GEN1:           // Gallileo Gen 1
+                gpio = opt.altGpio ? gpio : 3 ;         // use alternate pin?
+                cfg.led = new cfg.mraa.Gpio(gpio) ;     // initialize LED I/O pin
+                break ;
+
+            case cfg.mraa.INTEL_GALILEO_GEN2:           // Gallileo Gen 2
+            case cfg.mraa.INTEL_EDISON_FAB_C:           // Edison
+                gpio = opt.altGpio ? gpio : 13 ;        // use alternate pin?
+                cfg.led = new cfg.mraa.Gpio(gpio) ;     // initialize LED I/O pin
+                break ;
+
+            case cfg.mraa.INTEL_GT_TUCHUCK:             // Joule (aka Grosse Tete)
+                gpio = opt.altGpio ? gpio : 100 ;       // use alternate pin?
+                cfg.led = new cfg.mraa.Gpio(gpio) ;     // initialize LED I/O pin
+                break ;                                 // gpio 100, 101, 102 or 103 will work
+
+            default:
+                if( opt.skipTest && opt.altGpio ) {
+                    cfg.led = new cfg.mraa.Gpio(gpio) ; // force run on unknown platform with alt pin
+                }
+                else {
+                    console.error("Unknown libmraa platform: " + cfg.mraa.getPlatformType() + " -> " + cfg.mraa.getPlatformName()) ;
+                    chkPlatform = false ;               // did not recognize the platform
+                }
+        }
+        if( chkPlatform )
+            cfg.led.dir(cfg.mraa.DIR_OUT) ;             // configure the LED gpio as an output
+
+        return chkPlatform ;
+    } ;
 
 
 
@@ -132,56 +185,6 @@ module.exports = function(options) {
         else
             return true ;
     }
-
-
-
-/**
- * Using the mraa library, detect which platform we are running on
- * and make appropriate adjustments to our gpio configuration calls.
- *
- * If we do not recognize the platform, issue error and exit the app.
- *
- * @function
- * @return {Boolean} true if supported platform detected (and initialized)
- * @author Paul Fischer, Intel Corporation
- */
-
-    cfg.init = function() {
-
-        var gpio = opt.altGpio || 1 ;                   // set to arbitrary int if none provided by altGpio
-        var chkPlatform = true ;                        // start out hopeful!
-        switch( cfg.mraa.getPlatformType() ) {          // which board are we running on?
-
-            case cfg.mraa.INTEL_GALILEO_GEN1:           // Gallileo Gen 1
-                gpio = opt.altGpio ? gpio : 3 ;         // use alternate gpio pin?
-                cfg.led = new cfg.mraa.Gpio(gpio, false, true) ; // initialize LED I/O pin
-                break ;
-
-            case cfg.mraa.INTEL_GALILEO_GEN2:           // Gallileo Gen 2
-            case cfg.mraa.INTEL_EDISON_FAB_C:           // Edison
-                gpio = opt.altGpio ? gpio : 13 ;        // use alternate gpio pin?
-                cfg.led = new cfg.mraa.Gpio(gpio) ;     // initialize LED I/O pin
-                break ;
-
-            case cfg.mraa.INTEL_GT_TUCHUCK:             // Joule (aka Grosse Tete)
-                gpio = opt.altGpio ? gpio : 100 ;       // use alternate gpio pin?
-                cfg.led = new cfg.mraa.Gpio(gpio) ;     // initialize LED I/O pin
-                break ;                                 // gpio 100, 101, 102 or 103 will work
-
-            default:
-                if( opt.skipTest && opt.altGpio ) {
-                    cfg.led = new cfg.mraa.Gpio(gpio) ; // force run on unknown platform with alt gpio
-                }
-                else {
-                    console.error("Unknown libmraa platform: " + cfg.mraa.getPlatformType() + " -> " + cfg.mraa.getPlatformName()) ;
-                    chkPlatform = false ;               // did not recognize the platform
-                }
-        }
-        if( chkPlatform )
-            cfg.led.dir(cfg.mraa.DIR_OUT) ;             // configure the LED gpio as an output
-
-        return chkPlatform ;
-    } ;
 
 
 

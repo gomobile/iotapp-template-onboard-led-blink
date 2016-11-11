@@ -38,8 +38,9 @@ if( !cfg.init() ) {
 // now we are going to flash the LED
 // by toggling it at a periodic interval
 
+var ledState ;
 var periodicActivity = function() {
-    var ledState = cfg.led.read() ;             // get the current state of the LED pin
+    ledState = cfg.led.read() ;                 // get the current state of the LED pin
     cfg.led.write(ledState?0:1) ;               // if the pin is currently 1 write a '0' (low) else write a '1' (high)
     process.stdout.write(ledState?'0':'1') ;    // and write an unending stream of toggling 1/0's to the console
 } ;
