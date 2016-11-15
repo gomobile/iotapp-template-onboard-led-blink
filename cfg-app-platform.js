@@ -89,8 +89,8 @@ module.exports = function(options) {
 
             case cfg.mraa.INTEL_GALILEO_GEN1:           // Gallileo Gen 1
                 gpio = opt.altGpio ? gpio : 3 ;         // use alternate pin?
-                cfg.led = new cfg.mraa.Gpio(gpio) ;     // initialize LED I/O pin
-                break ;
+                cfg.led = new cfg.mraa.Gpio(gpio,false,true) ; // initialize LED I/O pin
+                break ;                                 // see http://iotdk.intel.com/docs/master/mraa/classmraa_1_1_gpio.html
 
             case cfg.mraa.INTEL_GALILEO_GEN2:           // Gallileo Gen 2
             case cfg.mraa.INTEL_EDISON_FAB_C:           // Edison
