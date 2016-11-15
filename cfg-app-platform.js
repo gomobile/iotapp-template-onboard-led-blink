@@ -65,6 +65,20 @@ module.exports = function(options) {
 
 
 /**
+ * Where we return the I/O object that is used to manipulate
+ * the I/O pin used by this application.
+ *
+ * See the cfg.init() function for details regarding which
+ * I/O pins are used on which board.
+ *
+ * @member {Object} contains GPIO object to be used by caller
+ */
+
+    cfg.led = {} ;                                  // to return mraa LED I/O object
+
+
+
+/**
  * Using the mraa library, detect which platform we are running on
  * and make appropriate adjustments to our gpio configuration calls.
  *
@@ -78,8 +92,6 @@ module.exports = function(options) {
  * @return {Boolean} true if supported platform detected (and initialized)
  * @author Paul Fischer, Intel Corporation
  */
-
-    cfg.led = {} ;                                      // to return mraa LED I/O object
 
     cfg.init = function() {
 
