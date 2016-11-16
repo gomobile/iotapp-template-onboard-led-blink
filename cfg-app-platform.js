@@ -1,6 +1,8 @@
 /*
  * Initialization and configuration code for the 'IoT LED Blink' app.
  * Designed to allow use of this sample on a variety of platforms.
+ *
+ * See LICENSE.md for license terms and conditions.
  */
 
 // keep /*jslint and /*jshint lines for proper jshinting and jslinting
@@ -74,13 +76,13 @@ module.exports = function(options) {
  *
  * The cfg.init() function must be called to configure for a specific board.
  *
- * see mraa Gpio class, especially constructor, for details:
- * http://iotdk.intel.com/docs/master/mraa/classmraa_1_1_gpio.html
+ * See mraa API documentation, especially I/O constructor, for details:
+ * http://iotdk.intel.com/docs/master/mraa/index.html
  *
  * @member {Object} for storing I/O object to be created by caller
- * @member {Object} Gpio class constructor parm, mraa GPIO pin #
- * @member {Object} Gpio class constructor parm, Gpio object lifetime owner
- * @member {Object} Gpio class constructor parm, Gpio object addressing mode
+ * @member {Number} Gpio class constructor parm, mraa GPIO pin #
+ * @member {Boolean} Gpio class constructor parm, Gpio object lifetime owner
+ * @member {Boolean} Gpio class constructor parm, Gpio object addressing mode
  */
 
     cfg.io = {} ;               // used by caller to hold mraa I/O object
@@ -225,9 +227,9 @@ module.exports = function(options) {
     cfg.identify = function() {
 
         if( opt.altPin )
-            console.log("altPin: " + opt.altPin) ;
+            console.log("Alternate I/O pin " + opt.altPin + " was used.") ;
         if( opt.skipTest )
-            console.log("skipTest: " + opt.skipTest) ;
+            console.log("Platform compatibility tests were skipped.") ;
 
         console.log("node version: " + process.versions.node) ;
         console.log("mraa version: " + cfg.mraa.getVersion()) ;
@@ -235,11 +237,11 @@ module.exports = function(options) {
         console.log("mraa platform name: " + cfg.mraa.getPlatformName()) ;
 
         var os = require('os') ;
-        console.log("os hostname: " + os.hostname()) ;
-        console.log("os platform: " + os.platform()) ;
-        console.log("os release: " + os.release()) ;
         console.log("os type: " + os.type()) ;
+        console.log("os platform: " + os.platform()) ;
         console.log("os architecture: " + os.arch()) ;
+        console.log("os release: " + os.release()) ;
+        console.log("os hostname: " + os.hostname()) ;
 //        console.log("os.cpus: ", os.cpus()) ;
 
 //        var fs = require('fs') ;
