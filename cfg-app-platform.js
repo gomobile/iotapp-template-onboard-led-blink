@@ -11,9 +11,9 @@
 
 
 /**
- * This module.exports() structure plus cfg = {}
- * allows us to pass in optional parms at require()
- * and return an object of properties and methods.
+ * This module.exports() structure + the cfg = {} object
+ * allows us to pass in optional parms at require() and
+ * then return an object of properties and methods.
  *
  * Just doing a require() of the module is not enough.
  * The module must be "called()" to be initialized.
@@ -25,7 +25,7 @@
  *
  * var options = {
  *     skipTest: true,         // skip the platform compatibility tests
- *     altGpio:  101           // initialize alternate GPIO port for LED
+ *     altPin:   101           // initialize alternate pin for I/O
  * } ;
  * var cfg = require("./cfg-app-platform.js")(options) ;
  *
@@ -39,8 +39,8 @@ module.exports = function(options) {
 "use strict" ;
 
     var cfg = {} ;              // for returning our module properties and methods
-    var ver = {} ;              // reference to the version compare helper module
-    var opt = {} ;              // to store module init passed parameters object
+    var ver = {} ;              // a reference to the version compare helper module
+    var opt = {} ;              // to store module.exports passed parm object (options)
 
     options = options || {} ;   // force a parameters object if none was passed
     opt = options ;             // assign passed parameters to our permanent object
@@ -48,15 +48,15 @@ module.exports = function(options) {
     if( opt.skipTest && (opt.skipTest !== true) )
         opt.skipTest = false ;
 
-    if( opt.altGpio && !Number.isInteger(opt.altGpio) )
-        opt.altGpio = false ;
+    if( opt.altPin && !Number.isInteger(opt.altPin) )
+        opt.altPin = false ;
 
     try {
         require.resolve("mraa") ;
     }
     catch(e) {
         process.exitCode = 1 ;
-        console.error("Critical mraa node module is missing, try 'npm install -g mraa' to fix.", e) ;
+        console.error("Critical: mraa node module is missing, try 'npm install -g mraa' to fix.", e) ;
         throw new Error("Unable to resolve mraa node module, see console for details.") ;
     }
     cfg.mraa = require("mraa") ;                    // initializes libmraa for I/O access
@@ -65,26 +65,38 @@ module.exports = function(options) {
 
 
 /**
- * Where we return the I/O object that is used to manipulate
- * the I/O pin used by this application.
+ * Configure the I/O object constructor input parameters to default values.
  *
- * See the cfg.init() function for details regarding which
- * I/O pins are used on which board.
+ * Includes a place to store the I/O object that is used to manipulate the
+ * I/O pin(s) used by this application to default values. The caller will
+ * create the I/O object based on the parameter values we send back via
+ * this cfg object.
  *
- * @member {Object} contains GPIO object to be used by caller
+ * The cfg.init() function must be called to configure for a specific board.
+ *
+ * see mraa Gpio class, especially constructor, for details:
+ * http://iotdk.intel.com/docs/master/mraa/classmraa_1_1_gpio.html
+ *
+ * @member {Object} for storing I/O object to be created by caller
+ * @member {Object} Gpio class constructor parm, mraa GPIO pin #
+ * @member {Object} Gpio class constructor parm, Gpio object lifetime owner
+ * @member {Object} Gpio class constructor parm, Gpio object addressing mode
  */
 
-    cfg.led = {} ;                                  // to return mraa LED I/O object
+    cfg.io = {} ;               // used by caller to hold mraa I/O object
+    cfg.ioPin = -1 ;            // set to unknown pin (will force a fail)
+    cfg.ioOwner = true ;        // set to constructor default
+    cfg.ioRaw = false ;         // set to constructor default
 
 
 
 /**
  * Using the mraa library, detect which platform we are running on
- * and make appropriate adjustments to our gpio configuration calls.
+ * and make appropriate adjustments to our io configuration calls.
  *
  * Check the case statements to find out which header pin is being
  * initialized for use by this app. Specifically, look for the
- * `cfg.led = new ...` lines.
+ * `cfg.io = new ...` lines.
  *
  * If we do not recognize the platform, issue error and exit the app.
  *
@@ -95,29 +107,28 @@ module.exports = function(options) {
 
     cfg.init = function() {
 
-        var gpio = opt.altGpio || 0 ;                   // set to zero if none provided by altGpio
+        var io = opt.altPin || -1 ;                     // set to bad value if none provided by altPin
         var chkPlatform = true ;                        // start out hopeful!
         switch( cfg.mraa.getPlatformType() ) {          // which board are we running on?
 
             case cfg.mraa.INTEL_GALILEO_GEN1:           // Gallileo Gen 1
-                gpio = opt.altGpio ? gpio : 3 ;         // use alternate pin?
-                cfg.led = new cfg.mraa.Gpio(gpio,false,true) ; // initialize LED I/O pin
-                break ;                                 // see http://iotdk.intel.com/docs/master/mraa/classmraa_1_1_gpio.html
+                io = opt.altPin ? io : 3 ;              // use alternate pin?
+                cfg.ioOwner = false ;                   // do not use default
+                cfg.ioRaw = true ;                      // do not use default
+                break ;
 
             case cfg.mraa.INTEL_GALILEO_GEN2:           // Gallileo Gen 2
             case cfg.mraa.INTEL_EDISON_FAB_C:           // Edison
-                gpio = opt.altGpio ? gpio : 13 ;        // use alternate pin?
-                cfg.led = new cfg.mraa.Gpio(gpio) ;     // initialize LED I/O pin
+                io = opt.altPin ? io : 13 ;             // use alternate pin?
                 break ;
 
             case cfg.mraa.INTEL_GT_TUCHUCK:             // Joule (aka Grosse Tete)
-                gpio = opt.altGpio ? gpio : 100 ;       // use alternate pin?
-                cfg.led = new cfg.mraa.Gpio(gpio) ;     // initialize LED I/O pin
+                io = opt.altPin ? io : 100 ;            // use alternate pin?
                 break ;                                 // gpio 100, 101, 102 or 103 will work
 
             default:
-                if( opt.skipTest && opt.altGpio ) {
-                    cfg.led = new cfg.mraa.Gpio(gpio) ; // force run on unknown platform with alt pin
+                if( opt.skipTest && opt.altPin ) {
+                    io = opt.altPin ; 		       // force run on unknown platform with alt pin
                 }
                 else {
                     console.error("Unknown libmraa platform: " + cfg.mraa.getPlatformType() + " -> " + cfg.mraa.getPlatformName()) ;
@@ -125,7 +136,7 @@ module.exports = function(options) {
                 }
         }
         if( chkPlatform )
-            cfg.led.dir(cfg.mraa.DIR_OUT) ;             // configure the LED gpio as an output
+            cfg.ioPin = io ;                            // return the desired pin #
 
         return chkPlatform ;
     } ;
@@ -145,7 +156,7 @@ module.exports = function(options) {
 
     cfg.test = function() {
 
-        if( opt.skipTest )     // if bypass version testing
+        if( opt.skipTest )                              // if bypassing version testing
             return true ;                               // pretend platform tests passed
 
         var checkNode = false ;
@@ -213,8 +224,8 @@ module.exports = function(options) {
 
     cfg.identify = function() {
 
-        if( opt.altGpio )
-            console.log("altGpio: " + opt.altGpio) ;
+        if( opt.altPin )
+            console.log("altPin: " + opt.altPin) ;
         if( opt.skipTest )
             console.log("skipTest: " + opt.skipTest) ;
 
