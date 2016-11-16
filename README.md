@@ -1,4 +1,4 @@
-Intel® XDK IoT Onboard LED Blink Node.js* App
+Intel® XDK IoT Node.js* Onboard LED Blink App
 =============================================
 See [LICENSE.md](LICENSE.md) for license terms and conditions.
 
@@ -13,8 +13,30 @@ Intel XDK, please start with
 
 App Overview
 ------------
-A simple Node.js application that blinks the onboard LED, on
-select Intel IoT development boards.
+A simple Node.js application that blinks the onboard LED (a GPIO output),
+on select Intel IoT development boards, and displays the result of that write
+on the console log.
+
+The app initializes a single pin to digital output mode, so it can be written;
+writes that digital output at a regular basis; and prints the result of each
+write to the console. The specific pin that is written is configured in
+`cfg-app-platform.js` and can be identified by looking for lines similar to the
+following line of code, in the `cfg.init` method:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    io = opt.altPin ? io : 100 ;            // use alternate pin?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In the example shown above, LED "pin 100" will be used to flash the LED.
+
+**IMPORTANT:** the LED pin that is configured by the sample is a function of the
+detected board. You **must** inspect the code to determine which LEd pin is being
+configured for use on your board!!
+
+Some boards have multiple LEDs that can be written to ("flashed" or "blinked").
+The `cfg-app-platform.js` module has been designed so you can override the pin
+that is used, by passing it an alternate pin during the init call (see the module
+documentation). Or, you can simply modify the code to change the default value.
 
 Important Sample App Files
 --------------------------

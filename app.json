@@ -9,7 +9,7 @@
   "tooltip" : "Blink the onboard LED.",
   "description" : "A simple Node.js application that blinks the onboard LED, on select Intel IoT development boards.",
   "articleUrl" : "https://software.intel.com/en-us/xdk/docs/intel-xdk-iot-edition-nodejs-templates",
-  "keywords" : ["led"],
+  "keywords" : ["mraa","digital i/o","led"],
   "targets": ["edison","galileo","joule"],
   "runtimes": ["node"]
 }
