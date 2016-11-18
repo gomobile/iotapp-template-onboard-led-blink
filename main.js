@@ -41,7 +41,7 @@ if( !cfg.init() ) {
 // configure (initialize) our I/O pins for usage (gives us an I/O object)
 // configuration is based on parameters provided by the call to cfg.init()
 
-cfg.io = new cfg.mraa.Gpio(cfg.ioPin,cfg.ioOwner,cfg.ioRaw) ;
+cfg.io = new cfg.mraa.Gpio(cfg.ioPin, cfg.ioOwner, cfg.ioRaw) ;
 cfg.io.dir(cfg.mraa.DIR_OUT) ;                  // configure the LED gpio as an output
 
 console.log("Using LED pin number: " + cfg.ioPin) ;

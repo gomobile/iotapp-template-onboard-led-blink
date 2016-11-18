@@ -98,7 +98,7 @@ module.exports = function(options) {
  *
  * Check the case statements to find out which header pin is being
  * initialized for use by this app. Specifically, look for the
- * `cfg.io = new ...` lines.
+ * `io = opt.altPin ...` lines.
  *
  * If we do not recognize the platform, issue error and exit the app.
  *
