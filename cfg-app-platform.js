@@ -130,7 +130,7 @@ module.exports = function(options) {
 
             default:
                 if( opt.skipTest && opt.altPin ) {
-                    io = opt.altPin ; 		       // force run on unknown platform with alt pin
+                    io = opt.altPin ;                   // force run on unknown platform with alt pin
                 }
                 else {
                     console.error("Unknown libmraa platform: " + cfg.mraa.getPlatformType() + " -> " + cfg.mraa.getPlatformName()) ;
