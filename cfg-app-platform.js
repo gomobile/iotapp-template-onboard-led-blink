@@ -57,9 +57,8 @@ module.exports = function(options) {
         require.resolve("mraa") ;
     }
     catch(e) {
-        process.exitCode = 1 ;
         console.error("Critical: mraa node module is missing, try 'npm install -g mraa' to fix.", e) ;
-        throw new Error("Unable to resolve mraa node module, see console for details.") ;
+        process.exit(-1) ;
     }
     cfg.mraa = require("mraa") ;                    // initializes libmraa for I/O access
     ver = require("./utl/version-compare.js") ;     // simple version strings comparator
@@ -183,13 +182,21 @@ module.exports = function(options) {
         return (checkMraa && checkNode) ;
     } ;
 
-    // "private" helper functions used by cfg.test() function, above
-    // defined outside of cfg.test() to minimize chance of memory leaks
+
+    // "Private" helper functions used by cfg.test() function, above.
+    // Defined outside of cfg.test() to minimize chance of memory leaks;
+    // per Gavin, our resident JavaScript guru.
 
     function checkNodeVersion(minNodeVersion) {
+        if( ver.versionCompare(process.versions.node, "0") === false ) {
+            console.error("Bad Node.js version string: " + process.versions.node) ;
+            return false ;
+        }
+
         if( ver.versionCompare(process.versions.node, minNodeVersion) < 0 ) {
             console.error("Node.js version is too old, upgrade your board's Node.js.") ;
-            console.error("Node.js version: " + process.versions.node) ;
+            console.error("Installed Node.js version is: " + process.versions.node) ;
+            console.error("Required min Node.js version: " + minNodeVersion) ;
             return false ;
         }
         else
@@ -197,14 +204,15 @@ module.exports = function(options) {
     }
 
     function checkMraaVersion(minMraaVersion) {
-        if( ver.versionCompare(cfg.mraa.getVersion(), "0") === false) {
+        if( ver.versionCompare(cfg.mraa.getVersion(), "0") === false ) {
             console.error("Bad libmraa version string: " + cfg.mraa.getVersion()) ;
             return false ;
         }
 
         if( ver.versionCompare(cfg.mraa.getVersion(), minMraaVersion) < 0 ) {
             console.error("libmraa version is too old, upgrade your board's mraa node module.") ;
-            console.error("libmraa version: " + cfg.mraa.getVersion()) ;
+            console.error("Installed libmraa version: " + cfg.mraa.getVersion()) ;
+            console.error("Required min libmraa version: " + minMraaVersion) ;
             return false ;
         }
         else
