@@ -7,7 +7,7 @@
  * https://software.intel.com/en-us/html5/articles/intel-xdk-iot-edition-nodejs-templates
  */
 
-// keep /*jslint and /*jshint lines for proper jshinting and jslinting
+// spec jslint and jshint lines for desired JavaScript linting
 // see http://www.jslint.com/help.html and http://jshint.com/docs
 /* jslint node:true */
 /* jshint unused:true */
@@ -21,6 +21,11 @@ var cfg = require("./cfg-app-platform.js")() ;          // init and config I/O r
 console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n") ;   // poor man's clear console
 console.log("Initializing " + APP_NAME) ;
 
+process.on("exit", function(code) {                     // define up front, due to no "hoisting"
+    clearInterval(intervalID) ;
+    console.log("\nExiting " + APP_NAME + ", with code:", code) ;
+}) ;
+
 
 // confirm that we have a version of libmraa and Node.js that works
 // exit this app if we do not
@@ -28,13 +33,11 @@ console.log("Initializing " + APP_NAME) ;
 cfg.identify() ;                // prints some interesting platform details to console
 
 if( !cfg.test() ) {
-    process.exitCode = 1 ;
-    throw new Error("Call to cfg.test() failed, check console messages for details.") ;
+    process.exit(1) ;
 }
 
 if( !cfg.init() ) {
-    process.exitCode = 1 ;
-    throw new Error("Call to cfg.init() failed, check console messages for details.") ;
+    process.exit(2) ;
 }
 
 
@@ -56,12 +59,3 @@ var periodicActivity = function() {
     process.stdout.write(ledState?'0':'1') ;    // and write an unending stream of toggling 1/0's to the console
 } ;
 var intervalID = setInterval(periodicActivity, 1000) ;  // start the periodic toggle
-
-
-// type process.exit(0) in debug console to see
-// the following message be emitted to the debug console
-
-process.on("exit", function(code) {
-    clearInterval(intervalID) ;
-    console.log("\nExiting " + APP_NAME + ", with code:", code) ;
-}) ;
