@@ -5,8 +5,8 @@
  * See LICENSE.md for license terms and conditions.
  */
 
-// keep /*jslint and /*jshint lines for proper jshinting and jslinting
-// see http://www.jslint.com/help.html and http://jshint.com/docs
+/* spec jslint and jshint lines for desired JavaScript linting */
+/* see http://www.jslint.com/help.html and http://jshint.com/docs */
 /* jslint node:true */
 /* jshint unused:true */
 
