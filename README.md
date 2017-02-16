@@ -29,14 +29,20 @@ following line of code, in the `cfg.init` method:
 
 In the example shown above, LED "pin 100" will be used to flash the LED.
 
-**IMPORTANT:** the LED pin that is configured by the sample is a function of the
-detected board. You **must** inspect the code to determine which LEd pin is being
-configured for use on your board!!
+**IMPORTANT:** the LED pin that is configured by the sample is a function of
+the detected board. You **must** inspect the code to determine which LED pin
+is being configured for use on your board!!
 
-Some boards have multiple LEDs that can be written to ("flashed" or "blinked").
-The `cfg-app-platform.js` module has been designed so you can override the pin
-that is used, by passing it an alternate pin during the init call (see the module
-documentation). Or, you can simply modify the code to change the default value.
+If you are using a NUC (aka "gateway") with an attached Arduino 101 board (aka
+"firmata" configuration), the I/O pin is identified by adding 512 to the
+respective I/O pin number, as it would be identified on the Arduino 101
+device. See the comments in the `cfg-app-platform.js` module for details.
+
+Some boards have multiple LEDs that can be written to ("flashed" or
+"blinked"). The `cfg-app-platform.js` module has been designed so you can
+override the pin that is used, by passing it an alternate pin during the init
+call (see the module documentation). Or, you can simply modify the code to
+change the default value.
 
 Important App Files
 -------------------
@@ -47,13 +53,14 @@ Important Project Files
 -----------------------
 * README.md
 * LICENSE.md
-* <project-name>.xdk
+* \<project-name\>.xdk
 
 Tested IoT Node.js Platforms
 ----------------------------
-* [Intel® Galileo Board](http://intel.com/galileo)
-* [Intel® Edison Development Platform](http://intel.com/edison)
+* [Intel® Galileo Board for Arduino](http://intel.com/galileo)
+* [Intel® Edison Board for Ardunio](http://intel.com/edison)
 * [Intel® Joule™ 570x Developer Kit](http://intel.com/joule)
+* [Intel® NUC DE3815](http://www.intel.com/nucsupport) + [Arduino 101](http://intel.com/arduino)
 
 This sample can run on other IoT [Node.js](http://nodejs.org) development
 platforms, that include the appropriate sensor hardware, but may require

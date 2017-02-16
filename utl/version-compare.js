@@ -1,7 +1,12 @@
-/*
- * Copyright (c) 2016-2017, Paul Fischer, Intel Corporation
+/**
+ * @file
+ * Compares two simple semver version strings.
  *
- * This is a “BSD-3” license. <http://www.tldrlegal.com/l/bsd3>
+ * @author Paul Fischer, Intel Corporation
+ *
+ * @copyright (c) 2016-2017, Intel Corporation
+ * @license BSD-3-Clause
+ * <http://www.tldrlegal.com/l/bsd3>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -40,7 +45,6 @@
 
 
 /**
- * Compares two simple semver version strings.
  * This is a very simple comparator that does not implement
  * the complete semver specification! It may have issues when
  * an ASCII string is part of the comparison.
