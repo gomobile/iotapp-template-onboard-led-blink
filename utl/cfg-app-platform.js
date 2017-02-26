@@ -105,6 +105,11 @@ module.exports = function(options) {
  *
  * If we do not recognize the platform, issue error and exit the app.
  *
+ * NOTE: Regarding the Galileo Gen 1 board LED: this board requires the use of
+ * raw mode to address the on-board LED. This board's LED is not connected to
+ * pin 13, like the Edison and Gen2 Galileo boards. See this page for details
+ * <https://iotdk.intel.com/docs/master/mraa/galileorevd.html>.
+ *
  * @function
  * @return {Boolean} true if supported platform detected (and initialized)
  */
@@ -117,8 +122,8 @@ module.exports = function(options) {
 
             case cfg.mraa.INTEL_GALILEO_GEN1:           // Galileo Gen 1
                 io = opt.altPin ? io : 3 ;              // use alternate pin?
-                cfg.ioOwner = false ;                   // do not use default
-                cfg.ioRaw = true ;                      // do not use default
+                cfg.ioOwner = false ;                   // raw mode is not recommended
+                cfg.ioRaw = true ;                      // see NOTE above re use of RAW
                 break ;
 
             case cfg.mraa.INTEL_GALILEO_GEN2:           // Galileo Gen 2
