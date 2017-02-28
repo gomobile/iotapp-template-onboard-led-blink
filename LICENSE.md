@@ -59,3 +59,14 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+License Summary for `os` and `fs` Node.js Modules
+=================================================
+
+These modules are standard components in the Node.js runtime and are,
+therefore, covered by the standard Node.js license terms and conditions (the
+“MIT” License).
+
+See <https://github.com/nodejs/node/blob/master/LICENSE> for the
+complete Node.js license terms and conditions.
