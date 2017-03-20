@@ -1,5 +1,5 @@
-Intel® XDK IoT Node.js* Onboard LED Blink App
-=============================================
+Intel® XDK IoT Node.js\* Onboard LED Blink App
+==============================================
 
 See [LICENSE.md](LICENSE.md) for license terms and conditions.
 

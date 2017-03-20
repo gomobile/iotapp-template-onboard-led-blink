@@ -24,15 +24,19 @@
 "use strict" ;
 
 
-var APP_NAME = "IoT LED Blink" ;
-var cfg = require("./utl/cfg-app-platform.js")() ;      // init and config I/O resources
 
-console.log("\n\n\n\n\n\n") ;                           // poor man's clear console
+var APP_NAME = "IoT LED Blink" ;
+var Cfg = require("./utl/cfg-app-platform.js") ;    // get Cfg() constructor
+var cfg = new Cfg() ;                               // init and config I/O resources
+
+console.log("\n\n\n\n\n\n") ;                       // poor man's clear console
 console.log("Initializing " + APP_NAME) ;
 
-process.on("exit", function(code) {                     // define up front, due to no "hoisting"
+process.on("exit", function(code) {                 // define up front, due to no "hoisting"
     clearInterval(intervalID) ;
-    console.log("\nExiting " + APP_NAME + ", with code:", code) ;
+    console.log(" ") ;
+    console.log("Exiting " + APP_NAME + ", with code:", code) ;
+    console.log(" ") ;
 }) ;
 
 

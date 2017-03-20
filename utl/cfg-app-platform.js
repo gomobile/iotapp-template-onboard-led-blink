@@ -15,41 +15,49 @@
 /* jslint node:true */
 /* jshint unused:true */
 
+"use strict" ;
+
 
 
 /**
- * This module.exports() structure + the cfg = {} object
- * allows us to pass in optional parms at require() and
- * then return an object of properties and methods.
+ * Returns a constructor named Cfg() that is usded to create an object to manage
+ * initializing an MRAA I/O object for a variety of IoT boards. The underlying
+ * mraa object is what actually accesses the board I/O hardware device(s) of
+ * interest.
  *
- * Just doing a require() of the module is not enough.
- * The module must be "called()" to be initialized.
+ * Just doing a require() of this module is not enough!!
+ * You must create a new object using the returned constructor.
  *
- * var cfg = require('this-module-name')() ;
- * var cfg = require('this-module-name')({opt1:1,opt2:2}) ;
+ * The Cfg() constructor has two signatures:
+ *   var cfg = new Cfg() ;
+ *   var cfg = new Cfg(options) ;
  *
- * example of how to use the options parameter:
+ * Usage example (using second signature):
+ *   var Cfg = require('this-module') ;
+ *   var cfg = new Cfg({opt1:1,opt2:2}) ;
  *
- * var options = {
+ * Example using the constructor's options argument:
+ *   var options = {
  *     skipTest: true,         // skip the platform compatibility tests
  *     altPin:   101           // initialize alternate pin for I/O
- * } ;
- * var cfg = require("./cfg-app-platform.js")(options) ;
+ *   } ;
+ *   var Cfg = require('this-module') ;
+ *   var cfg = new Cfg(options) ;
  *
  * @function
- * @param {Object} options? - object containing module options
- * @return {Object} cfg - module's public methods and properties
+ * @param {Object} options? - optional object for constructor arguments
+ * @return {Object} - require returns constructor, constructor returns object
  */
 
-module.exports = function(options) {
-"use strict" ;
+module.exports = Cfg ;          // require returns an object constructor
+function Cfg(options) {         // use "new Cfg()"" to create a unique object
 
-    var cfg = {} ;              // for returning our module properties and methods
+    var cfg = this ;            // for returning our module properties and methods
     var ver = {} ;              // a reference to the version compare helper module
-    var opt = {} ;              // to store module.exports passed parm object (options)
+    var opt = {} ;              // to store argument object (options) passed to constructor
 
-    options = options || {} ;   // force a parameters object if none was passed
-    opt = options ;             // assign passed parameters to our permanent object
+    options = options || {} ;   // force an arguments object if none was passed
+    opt = options ;             // assign passed arguments to our permanent object
 
     if( opt.skipTest && (opt.skipTest !== true) )
         opt.skipTest = false ;
@@ -70,19 +78,18 @@ module.exports = function(options) {
 
 
 /**
- * Configure the I/O object constructor input parameters to default values.
+ * Configure the I/O object constructor input arguments to default values.
  *
- * Includes a place to store the I/O object that is used to manipulate the
- * I/O pin(s) used by this application to default values. The caller will
- * create the I/O object based on the parameter values we send back via
- * this cfg object.
+ * Includes a place to store the default values for the I/O object that is used
+ * to manipulate the I/O pin(s) used by this application. The caller will create
+ * the I/O object based on the parameter values we send back in the cfg object.
  *
- * The cfg.init() function must be called to configure for a specific board.
+ * The cfg.init() function must be called to configure for a specific IoT board.
  *
  * See mraa API documentation, especially I/O constructor, for details:
  * http://iotdk.intel.com/docs/master/mraa/index.html
  *
- * @member {Object} for storing I/O object to be created by caller
+ * @member {Object} for storing mraa I/O object to be created by caller
  * @member {Number} Gpio class constructor parm, mraa GPIO pin #
  * @member {Boolean} Gpio class constructor parm, Gpio object lifetime owner
  * @member {Boolean} Gpio class constructor parm, Gpio object addressing mode
@@ -96,14 +103,14 @@ module.exports = function(options) {
 
 
 /**
- * Using the mraa library, detect which platform we are running on
- * and make appropriate adjustments to our io configuration calls.
+ * Using the mraa library, detect which IoT platform we are running on
+ * and make the appropriate adjustments to our io configuration calls.
  *
  * Check the case statements to find out which header pin is being
- * initialized for use by this app. Specifically, look for the
- * `io = opt.altPin ...` lines.
+ * initialized for use by this app. Specifically, see the
+ * `io = opt.altPin ...` lines in the code below.
  *
- * If we do not recognize the platform, issue error and exit the app.
+ * If we do not recognize the platform, issue an error and exit the app.
  *
  * NOTE: Regarding the Galileo Gen 1 board LED: this board requires the use of
  * raw mode to address the on-board LED. This board's LED is not connected to
@@ -189,18 +196,18 @@ module.exports = function(options) {
             case cfg.mraa.INTEL_GALILEO_GEN2:           // Gallileo Gen 2
             case cfg.mraa.INTEL_EDISON_FAB_C:           // Edison
                 checkNode = checkNodeVersion("4.0") ;
-                checkMraa = checkMraaVersion("1.0.0") ;
+                checkMraa = checkMraaVersion("1.0.0", cfg.mraa) ;
                 break ;
 
             case cfg.mraa.INTEL_GT_TUCHUCK:             // Joule (aka Grosse Tete)
                 checkNode = checkNodeVersion("4.0") ;
-                checkMraa = checkMraaVersion("1.3.0") ;
+                checkMraa = checkMraaVersion("1.3.0", cfg.mraa) ;
                 break ;
 
             case cfg.mraa.INTEL_DE3815:                 // Arduino 101 (aka "firmata") + DE3815 Baytrail NUCs
             case cfg.mraa.INTEL_NUC5:                   // Arduino 101 (aka "firmata") + 5th gen Broadwell NUCs
                 checkNode = checkNodeVersion("4.0") ;
-                checkMraa = checkMraaVersion("0.10.1") ;
+                checkMraa = checkMraaVersion("0.10.1", cfg.mraa) ;
                 break ;
 
             default:
@@ -230,15 +237,15 @@ module.exports = function(options) {
             return true ;
     }
 
-    function checkMraaVersion(minMraaVersion) {
-        if( ver.versionCompare(cfg.mraa.getVersion(), "0") === false ) {
-            console.error("Bad libmraa version string: " + cfg.mraa.getVersion()) ;
+    function checkMraaVersion(minMraaVersion, mraa) {
+        if( ver.versionCompare(mraa.getVersion(), "0") === false ) {
+            console.error("Bad libmraa version string: " + mraa.getVersion()) ;
             return false ;
         }
 
-        if( ver.versionCompare(cfg.mraa.getVersion(), minMraaVersion) < 0 ) {
+        if( ver.versionCompare(mraa.getVersion(), minMraaVersion) < 0 ) {
             console.error("libmraa version is too old, upgrade your board's mraa node module.") ;
-            console.error("Installed libmraa version: " + cfg.mraa.getVersion()) ;
+            console.error("Installed libmraa version: " + mraa.getVersion()) ;
             console.error("Required min libmraa version: " + minMraaVersion) ;
             return false ;
         }
@@ -289,12 +296,5 @@ module.exports = function(options) {
     } ;
 
 
-
-/**
- * This is the actual module object that we want, but
- * you will only get it if you call the module.exports
- * function, per the instructions at the top of this module!
- */
     return cfg ;
-
-} ;
+}
