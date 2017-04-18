@@ -49,8 +49,8 @@ device. See the comments in the `cfg-app-platform.js` module for details.
 Some boards have multiple LEDs that can be written to ("flashed" or
 "blinked"). The `cfg-app-platform.js` module has been designed so you can
 override the pin that is used, by passing it an alternate pin during the init
-call (see the module documentation). Or, you can simply modify the code to
-change the default value.
+call (see the module documentation). Or, you can simply modify the code in
+that file to change the default value.
 
 Important App Files
 -------------------
@@ -71,9 +71,23 @@ Tested IoT Node.js Platforms
 * [Intel® Galileo Board for Arduino](http://intel.com/galileo)
 * [Intel® Edison Board for Arduino](http://intel.com/edison)
 * [Intel® Joule™ 570x Developer Kit](http://intel.com/joule)
-* [Intel® NUC DE3815](http://www.intel.com/nucsupport) + [Arduino 101](http://intel.com/arduino)
+* [Intel® NUC DE3815] + [Arduino 101](http://intel.com/arduino)
+* [Intel® NUC5i7RYH] + [Arduino 101](http://intel.com/arduino)
+
+[Intel® NUC DE3815]: http://ark.intel.com/products/78577/Intel-NUC-Kit-DE3815TYKHE
+[Intel® NUC5i7RYH]: https://ark.intel.com/products/87570/Intel-NUC-Kit-NUC5i7RYH
+
+> See the [Intel® NUC support page](http://www.intel.com/nucsupport)
+> and the [Intel Product Specifications](http://ark.intel.com/) search tool
+> for detailed hardware specifications and support.
 
 This sample can run on other IoT [Node.js](http://nodejs.org) development
-platforms, that include the appropriate sensor hardware, but may require
-changes to the I/O initialization and configuration code in order to work on
-those other platforms.
+platforms, but they must include the appropriate sensor hardware or have an
+attached Arduino 101 board and utilize the `imraa` service. If you use an IoT
+device that is not listed above you may have to make changes to the I/O
+initialization and configuration code in the `cfg-app-platform.js` module
+before it will work on those other platforms. See this
+[device software prerequisites][1] page for help configuring the software on
+your IoT device so it can be used with the Intel XDK.
+
+[1]: https://software.intel.com/en-us/xdk/docs/target-device-software-prereqs

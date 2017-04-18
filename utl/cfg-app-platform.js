@@ -38,8 +38,9 @@
  *
  * Example using the constructor's options argument:
  *   var options = {
- *     skipTest: true,         // skip the platform compatibility tests
- *     altPin:   101           // initialize alternate pin for I/O
+ *     skipTest: true,           // skip the platform compatibility tests
+ *     altPin:   101,            // initialize alternate pin for I/O
+ *     devTty:   "/dev/ttyACM1"  // non-default imraa/Arduino port
  *   } ;
  *   var Cfg = require('this-module') ;
  *   var cfg = new Cfg(options) ;
@@ -125,46 +126,75 @@ function Cfg(options) {         // use "new Cfg()"" to create a unique object
 
         var io = opt.altPin || -1 ;                     // set to bad value if none provided by altPin
         var chkPlatform = true ;                        // start out hopeful!
+        var mraaError = cfg.mraa.SUCCESS ;              // for checking some mraa return codes
+
+        if( opt.skipTest ) {                            // skip platform test?
+            io = opt.altPin ;                           // force run on unknown platform with alt pin
+        }
+        else if( typeof(cfg.mraa.getPlatformType()) === "undefined" ) {
+            console.error("getPlatformType() is 'undefined' -> possible problem with 'mraa' library?") ;
+            chkPlatform = false ;                       // did not recognize the platform
+        }
+        else {
         switch( cfg.mraa.getPlatformType() ) {          // which board are we running on?
 
             case cfg.mraa.INTEL_GALILEO_GEN1:           // Galileo Gen 1
+
                 io = opt.altPin ? io : 3 ;              // use alternate pin?
                 cfg.ioOwner = false ;                   // raw mode is not recommended
                 cfg.ioRaw = true ;                      // see NOTE above re use of RAW
                 break ;
 
+
             case cfg.mraa.INTEL_GALILEO_GEN2:           // Galileo Gen 2
             case cfg.mraa.INTEL_EDISON_FAB_C:           // Edison
+
                 io = opt.altPin ? io : 13 ;             // use alternate pin?
                 break ;
 
+
             case cfg.mraa.INTEL_GT_TUCHUCK:             // Joule (aka Grosse Tete)
+            case cfg.mraa.INTEL_JOULE_EXPANSION:        // new preferred name for Joule platform
+
                 io = opt.altPin ? io : 100 ;            // use alternate pin?
                 break ;                                 // gpio 100, 101, 102 or 103 will work
 
-            case cfg.mraa.INTEL_DE3815:                 // Arduino 101 (aka "firmata") + DE3815 Baytrail NUCs
-            case cfg.mraa.INTEL_NUC5:                   // Arduino 101 (aka "firmata") + 5th gen Broadwell NUCs
-                // cfg.mraa.addSubplatform(cfg.mraa.GENERIC_FIRMATA, "/dev/ttyACM0") ; // config for DE3815
-                if( /firmata$/.test(cfg.mraa.getPlatformName()) ) {
+
+            // following are most potential "Gateway + Arduino 101 + firmata" platforms
+            case cfg.mraa.INTEL_DE3815:                 // DE3815 Baytrail NUCs
+            case cfg.mraa.INTEL_NUC5:                   // 5th gen Broadwell NUCs
+            case cfg.mraa.INTEL_CHERRYHILLS:            // could be found on a NUC/Gateway
+            case cfg.mraa.INTEL_UP:                     // Intel UP board (small Atom board)
+            case cfg.mraa.NULL_PLATFORM:                // most likely a generic platform/NUC/Gateway
+            case cfg.mraa.UNKNOWN_PLATFORM:             // might also be a generic platform/NUC/Gateway
+
+                if( typeof(opt.devTty) === "string" || opt.devTty instanceof String ) {
+                    mraaError = cfg.mraa.addSubplatform(cfg.mraa.GENERIC_FIRMATA, opt.devTty) ;
+                }
+                else {  // assume standard Arduino 101 serial-over-USB tty name for Linux
+                    mraaError = cfg.mraa.addSubplatform(cfg.mraa.GENERIC_FIRMATA, "/dev/ttyACM0") ;
+                }
+
+                // imraa + Arduino 101 should add "+ firmata" to getPlatformName(), but doesn't always happen
+                if( (mraaError === cfg.mraa.SUCCESS) && (/firmata/.test(cfg.mraa.getPlatformName()) || cfg.mraa.hasSubPlatform()) ) {
                     io = opt.altPin ? io : (13 + 512) ; // use alternate pin?
                 }
                 else {
-                    console.error("'firmata' platform required but not detected: " + cfg.mraa.getPlatformType() + " -> " + cfg.mraa.getPlatformName()) ;
-                    console.error("Insure 'firmata' board (e.g., Arduino 101) is attached via USB before booting your " + cfg.mraa.getPlatformName() + ".") ;
-                    console.error("Insure 'imraa' service and command-line app is present and available on your system.") ;
+                    console.error("'firmata' sub-platform required but not detected: " + cfg.mraa.getPlatformName()) ;
+                    console.error("Attach Arduino 101 (i.e., 'firmata' board) to USB port on your IoT Gateway/NUC.") ;
+                    console.error("Try disconnecting and reconnecting your Arduino 101 to the USB port on your system.") ;
+                    console.error("Use 'imraa -a' to initialize your Arduino 101 with the 'firmata' firmware image.") ;
                     chkPlatform = false ;               // did not recognize the platform
                 }
                 break ;
 
+
             default:
-                if( opt.skipTest && opt.altPin ) {
-                    io = opt.altPin ;                   // force run on unknown platform with alt pin
-                }
-                else {
-                    console.error("Unknown libmraa platform: " + cfg.mraa.getPlatformType() + " -> " + cfg.mraa.getPlatformName()) ;
-                    chkPlatform = false ;               // did not recognize the platform
-                }
+                console.error("Unrecognized libmraa platform: " + cfg.mraa.getPlatformType() + " -> " + cfg.mraa.getPlatformName()) ;
+                chkPlatform = false ;                   // did not recognize the platform
+            }
         }
+
         if( chkPlatform )
             cfg.ioPin = io ;                            // return the desired pin #
 
@@ -185,33 +215,65 @@ function Cfg(options) {         // use "new Cfg()"" to create a unique object
 
     cfg.test = function() {
 
-        if( opt.skipTest )                              // if bypassing version testing
-            return true ;                               // pretend platform tests passed
-
         var checkNode = false ;
         var checkMraa = false ;
+        var isUbuntu = false ;
+
+        // check to see if running on Ubuntu
+        // stricter requirements for mraa version
+        // should also check for Ubuntu version, but not now...
+        var fs = require("fs") ;
+        var fileName = "/etc/os-release" ;
+        var fileData = "" ;
+        if( fs.existsSync(fileName) ) {
+            fileData = fs.readFileSync(fileName, "utf8") ;
+            isUbuntu = fileData.toLowerCase().includes("ubuntu") ;
+        }
+
+        if( opt.skipTest ) {                            // if bypassing version testing
+            return true ;                               // pretend platform tests passed
+        }
+        else if( typeof(cfg.mraa.getPlatformType()) === "undefined" ) {
+            console.error("getPlatformType() is 'undefined' -> possible problem with 'mraa' library?") ;
+        }
+        else {
         switch( cfg.mraa.getPlatformType() ) {          // which board are we running on?
 
             case cfg.mraa.INTEL_GALILEO_GEN1:           // Gallileo Gen 1
             case cfg.mraa.INTEL_GALILEO_GEN2:           // Gallileo Gen 2
             case cfg.mraa.INTEL_EDISON_FAB_C:           // Edison
                 checkNode = checkNodeVersion("4.0") ;
-                checkMraa = checkMraaVersion("1.0.0", cfg.mraa) ;
+                if( isUbuntu )
+                    checkMraa = checkMraaVersion("1.6.1", cfg.mraa) ;
+                else
+                    checkMraa = checkMraaVersion("1.0.0", cfg.mraa) ;
                 break ;
 
-            case cfg.mraa.INTEL_GT_TUCHUCK:             // Joule (aka Grosse Tete)
+            case cfg.mraa.INTEL_GT_TUCHUCK:             // old Joule name (aka Grosse Tete)
+            case cfg.mraa.INTEL_JOULE_EXPANSION:        // new preferred name for Joule platform
                 checkNode = checkNodeVersion("4.0") ;
-                checkMraa = checkMraaVersion("1.3.0", cfg.mraa) ;
+                if( isUbuntu )
+                    checkMraa = checkMraaVersion("1.6.1", cfg.mraa) ;
+                else
+                    checkMraa = checkMraaVersion("1.3.0", cfg.mraa) ;
                 break ;
 
-            case cfg.mraa.INTEL_DE3815:                 // Arduino 101 (aka "firmata") + DE3815 Baytrail NUCs
-            case cfg.mraa.INTEL_NUC5:                   // Arduino 101 (aka "firmata") + 5th gen Broadwell NUCs
+            case cfg.mraa.INTEL_DE3815:                 // DE3815 Baytrail NUCs
+            case cfg.mraa.INTEL_NUC5:                   // 5th gen Broadwell NUCs
+            case cfg.mraa.INTEL_CHERRYHILLS:            // could be found on a NUC/Gateway
+            case cfg.mraa.INTEL_UP:                     // Intel UP board (small Atom board)
+            case cfg.mraa.NULL_PLATFORM:                // most likely a generic platform/NUC/Gateway
+            case cfg.mraa.UNKNOWN_PLATFORM:             // might also be a generic platform/NUC/Gateway
                 checkNode = checkNodeVersion("4.0") ;
-                checkMraa = checkMraaVersion("0.10.1", cfg.mraa) ;
+                if( isUbuntu )
+                    checkMraa = checkMraaVersion("1.6.1", cfg.mraa) ;
+                else
+                    checkMraa = checkMraaVersion("0.10.1", cfg.mraa) ;
                 break ;
 
             default:
                 console.error("Unknown libmraa platform: " + cfg.mraa.getPlatformType() + " -> " + cfg.mraa.getPlatformName()) ;
+            }
         }
         return (checkMraa && checkNode) ;
     } ;
@@ -284,15 +346,6 @@ function Cfg(options) {         // use "new Cfg()"" to create a unique object
         console.log("os release: " + os.release()) ;
         console.log("os hostname: " + os.hostname()) ;
 //        console.log("os.cpus: ", os.cpus()) ;
-
-//        var fs = require('fs') ;
-//        var fileData = function(err, data) {
-//            if( err )
-//                throw new Error("Something bad happened: " + err) ;
-//            else
-//                console.log(JSON.stringify(data)) ;
-//        } ;
-//        fs.readFile('/etc/os-release', fileData) ;
     } ;
 
 
