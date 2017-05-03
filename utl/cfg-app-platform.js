@@ -67,13 +67,23 @@ function Cfg(options) {         // use "new Cfg()"" to create a unique object
         opt.altPin = false ;
 
     try {
-        require.resolve("mraa") ;
+        require.resolve("mraa") ;                   // make sure mraa is even present
     }
     catch(e) {
-        console.error("Critical: mraa node module is missing, try 'npm install -g mraa' to fix.", e) ;
+        console.error(e) ;
+        console.error("Critical: missing mraa node module.") ;
+        console.error("See https://software.intel.com/en-us/xdk/faqs/iot#update-mraa-lib") ;
         process.exit(-1) ;
     }
-    cfg.mraa = require("mraa") ;                    // initializes libmraa for I/O access
+    try {
+        cfg.mraa = require("mraa") ;                // initialize libmraa for I/O access
+    }
+    catch(e) {
+        console.error(e) ;
+        console.error("Critical: bad mraa node module installation.") ;
+        console.error("See https://software.intel.com/en-us/xdk/faqs/iot#update-mraa-lib") ;
+        process.exit(-2) ;
+    }
     ver = require("./version-compare") ;            // simple version strings comparator
 
 
